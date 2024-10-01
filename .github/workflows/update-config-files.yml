@@ -8,4 +8,4 @@ on:
 jobs:
   call-update-configuration-files:
     name: Update configuration files
-    uses: actions/reusable-workflows/.github/workflows/update-config-files.yml@main
+    uses: priya-kinthali/reusable-workflows/.github/workflows/update-config-files.yml@test-ubuntu24

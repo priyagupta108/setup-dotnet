@@ -6,7 +6,7 @@ on:
       - '**.md'
   push:
     branches:
-      - main
+      - test-ubuntu24
       - releases/*
     paths-ignore:
       - '**.md'
@@ -14,6 +14,6 @@ on:
 jobs:
   call-basic-validation:
     name: Basic validation
-    uses: actions/reusable-workflows/.github/workflows/basic-validation.yml@main
+    uses: priya-kinthali/reusable-workflows/.github/workflows/basic-validation.yml@test-ubuntu24
     with:
       node-version: '20'

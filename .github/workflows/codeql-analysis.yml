@@ -2,7 +2,7 @@ name: CodeQL analysis
 
 on:
   push:
-    branches: [main]
+    branches: [test-ubuntu24]
   pull_request:
     branches: [main]
   schedule:
@@ -11,4 +11,4 @@ on:
 jobs:
   call-codeQL-analysis:
     name: CodeQL analysis
-    uses: actions/reusable-workflows/.github/workflows/codeql-analysis.yml@main
+    uses: priya-kinthali/reusable-workflows/.github/workflows/codeql-analysis.yml@test-ubuntu24
