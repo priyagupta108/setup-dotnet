@@ -3,7 +3,7 @@ name: Licensed
 on:
   push:
     branches:
-      - test-ubuntu24
+      - main
   pull_request:
     branches:
       - main

@@ -3,7 +3,7 @@ name: Check dist/
 on:
   push:
     branches:
-      - test-ubuntu24
+      - main
     paths-ignore:
       - '**.md'
   pull_request:

@@ -2,7 +2,7 @@ name: CodeQL analysis
 
 on:
   push:
-    branches: [test-ubuntu24]
+    branches: [main]
   pull_request:
     branches: [main]
   schedule:
