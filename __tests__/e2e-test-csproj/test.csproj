@@ -3,6 +3,7 @@
   <PropertyGroup>
     <TargetFramework>$(TEST_TARGET_FRAMEWORK)</TargetFramework>
     <IsPackable>false</IsPackable>
+    <InvariantGlobalization>true</InvariantGlobalization>
     <DisableImplicitNuGetFallbackFolder>true</DisableImplicitNuGetFallbackFolder>
   </PropertyGroup>
 
