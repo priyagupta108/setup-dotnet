@@ -6,7 +6,7 @@ on:
       - '**.md'
   push:
     branches:
-      - test-ubuntu24
+      # - test-ubuntu24
       - releases/*
     paths-ignore:
       - '**.md'
