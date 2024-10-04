@@ -33,3 +33,5 @@ jobs:
           dotnet-version: ${{ matrix.dotnet-version }}
       - name: Verify installed version
         shell: pwsh
+        run: |
+          __tests__/verify-dotnet.ps1 -Patterns "^${{ matrix.dotnet-version }}"
