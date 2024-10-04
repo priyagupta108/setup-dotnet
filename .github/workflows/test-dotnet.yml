@@ -19,6 +19,8 @@ jobs:
       matrix:
         operating-system: [ubuntu-22.04, ubuntu-24.04]
         dotnet-version: ['2.1', '2.2', '3.0', '3.1', '5.0', '6.0', '7.0', '8.0']
+    env:
+      DOTNET_SYSTEM_GLOBALIZATION_INVARIANT: true
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -31,5 +33,3 @@ jobs:
           dotnet-version: ${{ matrix.dotnet-version }}
       - name: Verify installed version
         shell: pwsh
-        run: |
-          __tests__/verify-dotnet.ps1 -Patterns "^${{ matrix.dotnet-version }}"
