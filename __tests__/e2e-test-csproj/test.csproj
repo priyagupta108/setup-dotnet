@@ -3,11 +3,16 @@
   <PropertyGroup>
     <TargetFramework>$(TEST_TARGET_FRAMEWORK)</TargetFramework>
     <IsPackable>false</IsPackable>
-    <InvariantGlobalization>true</InvariantGlobalization>
     <DisableImplicitNuGetFallbackFolder>true</DisableImplicitNuGetFallbackFolder>
   </PropertyGroup>
 
   <ItemGroup>
+  <PackageReference Include="Microsoft.ICU.ICU4C.Runtime" Version="68.2.0.9" />
+
+  <RuntimeHostConfigurationOption
+    Condition="$(RuntimeIdentifier.StartsWith('linux')) Or $(RuntimeIdentifier.StartsWith('win')) Or ('$(RuntimeIdentifier)' == '' And !$([MSBuild]::IsOSPlatform('osx')))"
+    Include="System.Globalization.AppLocalIcu"
+    Value="68.2.0.9" />
     <!-- These packages will be downloaded over the network for testing proxy settings -->
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.5.0-preview-20170810-02" />
     <PackageReference Include="MSTest.TestAdapter" Version="1.1.18" />
