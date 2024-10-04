@@ -25,11 +25,6 @@ jobs:
       - name: Clear toolcache
         shell: pwsh
         run: __tests__/clear-toolcache.ps1 ${{ runner.os }}
-      - name: Install ICU
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y libicu-dev
-        if: startsWith(matrix.operating-system, 'ubuntu-')
       - name: Setup dotnet ${{ matrix.dotnet-version }}
         uses: ./
         with:

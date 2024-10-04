@@ -60,6 +60,7 @@ $testProjectDir = "./__tests__/e2e-test-csproj"
 Write-Host "Changing directory to the $testProjectDir"
 Set-Location $testProjectDir
 
+
 $targetFrameworkVersionMap = @{
   "1.0" = "netcoreapp1.0";
   "1.1" = "netcoreapp1.1";
@@ -76,6 +77,9 @@ $targetFrameworkVersionMap = @{
 
 foreach ($version in $Versions)
 {
+  # Set the System.Globalization.Invariant environment variable to true
+  [Environment]::SetEnvironmentVariable('System.Globalization.Invariant', 'true', [EnvironmentVariableTarget]::Process)
+
   # Creating temporary global.json file inside e2e-test-csproj dir and setting exact version of .NET inside allows to override default behavior of .NET and run build and tests on that exact version. 
   Write-Host "Creating temporary global.json file for $version .NET version."
   & $dotnet new globaljson --sdk-version $version --force | Out-Null
