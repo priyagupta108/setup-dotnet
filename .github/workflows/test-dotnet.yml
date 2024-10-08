@@ -32,7 +32,7 @@ jobs:
         with:
           dotnet-version: ${{ matrix.dotnet-version }}
       - name: Install dependencies
-        run: sudo apt install libssl1.1
+        run: openssl version -a
       - name: Verify installed version
         shell: pwsh
         run: |
