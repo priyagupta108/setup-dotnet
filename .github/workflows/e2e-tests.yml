@@ -17,128 +17,134 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        operating-system: [ubuntu-22.04, windows-latest, macos-13]
+        operating-system:
+          [ubuntu-24.04, ubuntu-22.04, windows-latest, macos-13, macos-latest]
     steps:
       - name: Checkout
         uses: actions/checkout@v4
       - name: Clear toolcache
         shell: pwsh
         run: __tests__/clear-toolcache.ps1 ${{ runner.os }}
-      - name: Setup dotnet 2.2.402, 3.1.404 and 3.0.x
+      - name: Setup dotnet 6.0.427, 8.0.403 and 8.0.x
         uses: ./
         with:
           dotnet-version: |
-            2.2.402
-            3.1.404
-            3.0.x
+            6.0.427
+            8.0.403
+            8.0.x
       - name: Verify dotnet
         shell: pwsh
-        run: __tests__/verify-dotnet.ps1 -Patterns "^2.2.402$", "^3.1.404$", "^3.0"
+        run: __tests__/verify-dotnet.ps1 -Patterns "^6.0.427$", "^8.0.403$", "^8.0"
 
   test-setup-full-version:
     runs-on: ${{ matrix.operating-system }}
     strategy:
       fail-fast: false
       matrix:
-        operating-system: [ubuntu-22.04, windows-latest, macos-13]
+        operating-system:
+          [ubuntu-24.04, ubuntu-22.04, windows-latest, macos-13, macos-latest]
     steps:
       - name: Checkout
         uses: actions/checkout@v4
       - name: Clear toolcache
         shell: pwsh
         run: __tests__/clear-toolcache.ps1 ${{ runner.os }}
-      # Side-by-side install of 2.2 and 3.1 used for the test project
-      - name: Setup dotnet 2.2.402
+      # Side-by-side install of 6.0 and 8.0 used for the test project
+      - name: Setup dotnet 6.0.427
         uses: ./
         with:
-          dotnet-version: 2.2.402
-      - name: Setup dotnet 3.1.201
+          dotnet-version: 6.0.427
+      - name: Setup dotnet 8.0.402
         uses: ./
         with:
-          dotnet-version: 3.1.201
+          dotnet-version: 8.0.402
           # We are including this variable to force the generation of the nuget config file to verify that it is created in the correct place
           source-url: https://api.nuget.org/v3/index.json
         env:
           NUGET_AUTH_TOKEN: NOTATOKEN
       - name: Verify dotnet
         shell: pwsh
-        run: __tests__/verify-dotnet.ps1 -Patterns "^3.1.201$", "^2.2.402$" -CheckNugetConfig
+        run: __tests__/verify-dotnet.ps1 -Patterns "^8.0.402$", "^6.0.427$" -CheckNugetConfig
 
   test-setup-without-patch-version:
     runs-on: ${{ matrix.operating-system }}
     strategy:
       fail-fast: false
       matrix:
-        operating-system: [ubuntu-22.04, windows-latest, macos-13]
+        operating-system:
+          [ubuntu-24.04, ubuntu-22.04, windows-latest, macos-13, macos-latest]
     steps:
       - name: Checkout
         uses: actions/checkout@v4
       - name: Clear toolcache
         shell: pwsh
         run: __tests__/clear-toolcache.ps1 ${{ runner.os }}
-      # 2.0, 3.0, 5.0 needs to be in single quotes to interpret as a string instead of as an integer
-      - name: Setup dotnet '3.1'
+      # 6.0, 7.0, 8.0 needs to be in single quotes to interpret as a string instead of as an integer
+      - name: Setup dotnet '8.0'
         uses: ./
         with:
-          dotnet-version: '3.1'
-      - name: Setup dotnet '2.2'
+          dotnet-version: '8.0'
+      - name: Setup dotnet '6.0'
         uses: ./
         with:
-          dotnet-version: '2.2'
+          dotnet-version: '6.0'
       - name: Verify dotnet
         shell: pwsh
-        run: __tests__/verify-dotnet.ps1 -Patterns "^3.1", "^2.2"
+        run: __tests__/verify-dotnet.ps1 -Patterns "^8.0", "^6.0"
 
   test-setup-prerelease-version:
     runs-on: ${{ matrix.operating-system }}
     strategy:
       fail-fast: false
       matrix:
-        operating-system: [ubuntu-22.04, windows-latest, macos-13]
+        operating-system:
+          [ubuntu-24.04, ubuntu-22.04, windows-latest, macos-13, macos-latest]
     steps:
       - name: Checkout
         uses: actions/checkout@v4
       - name: Clear toolcache
         shell: pwsh
         run: __tests__/clear-toolcache.ps1 ${{ runner.os }}
-      - name: Setup dotnet '3.1.100-preview1-014459'
+      - name: Setup dotnet '8.0.100-preview.1.23115.2'
         uses: ./
         with:
-          dotnet-version: '3.1.100-preview1-014459'
+          dotnet-version: '8.0.100-preview.1.23115.2'
       - name: Verify dotnet
         shell: pwsh
-        run: __tests__/verify-dotnet.ps1 -Patterns "3.1.100-preview1-014459"
+        run: __tests__/verify-dotnet.ps1 -Patterns "8.0.100-preview.1.23115.2"
 
   test-setup-latest-patch-version:
     runs-on: ${{ matrix.operating-system }}
     strategy:
       fail-fast: false
       matrix:
-        operating-system: [ubuntu-22.04, windows-latest, macos-13]
+        operating-system:
+          [ubuntu-24.04, ubuntu-22.04, windows-latest, macos-13, macos-latest]
     steps:
       - name: Checkout
         uses: actions/checkout@v4
       - name: Clear toolcache
         shell: pwsh
         run: __tests__/clear-toolcache.ps1 ${{ runner.os }}
-      - name: Setup dotnet 3.1.x
+      - name: Setup dotnet 8.0.x
         uses: ./
         with:
-          dotnet-version: 3.1.x
-      - name: Setup dotnet 2.2.X
+          dotnet-version: 8.0.x
+      - name: Setup dotnet 6.0.X
         uses: ./
         with:
-          dotnet-version: 2.2.X
+          dotnet-version: 6.0.X
       - name: Verify dotnet
         shell: pwsh
-        run: __tests__/verify-dotnet.ps1 -Patterns "^2.2", "^3.1"
+        run: __tests__/verify-dotnet.ps1 -Patterns "^6.0", "^8.0"
 
   test-ABCxx-syntax:
     runs-on: ${{ matrix.operating-system }}
     strategy:
       fail-fast: false
       matrix:
-        operating-system: [ubuntu-22.04, windows-latest, macos-13]
+        operating-system:
+          [ubuntu-24.04, ubuntu-22.04, windows-latest, macos-13, macos-latest]
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -159,31 +165,33 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        operating-system: [ubuntu-22.04, windows-latest, macos-13]
+        operating-system:
+          [ubuntu-24.04, ubuntu-22.04, windows-latest, macos-13, macos-latest]
     steps:
       - name: Checkout
         uses: actions/checkout@v4
       - name: Clear toolcache
         shell: pwsh
         run: __tests__/clear-toolcache.ps1 ${{ runner.os }}
-      - name: Setup dotnet 3.1.*
+      - name: Setup dotnet 8.0.*
         uses: ./
         with:
-          dotnet-version: 3.1.*
-      - name: Setup dotnet 2.2.*
+          dotnet-version: 8.0.*
+      - name: Setup dotnet 6.0.*
         uses: ./
         with:
-          dotnet-version: 2.2.*
+          dotnet-version: 6.0.*
       - name: Verify dotnet
         shell: pwsh
-        run: __tests__/verify-dotnet.ps1 -Patterns "^3.1", "^2.2"
+        run: __tests__/verify-dotnet.ps1 -Patterns "^8.0", "^6.0"
 
   test-setup-global-json-specified-and-version:
     runs-on: ${{ matrix.operating-system }}
     strategy:
       fail-fast: false
       matrix:
-        operating-system: [ubuntu-22.04, windows-latest, macos-13]
+        operating-system:
+          [ubuntu-24.04, ubuntu-22.04, windows-latest, macos-13, macos-latest]
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -194,22 +202,23 @@ jobs:
         shell: bash
         run: |
           mkdir subdirectory
-          echo '{"sdk":{"version": "2.2.207","rollForward": "latestFeature"}}' > ./subdirectory/global.json
+          echo '{"sdk":{"version": "6.0.424","rollForward": "latestFeature"}}' > ./subdirectory/global.json
       - name: Setup dotnet
         uses: ./
         with:
-          dotnet-version: 3.1
+          dotnet-version: '8.0'
           global-json-file: ./subdirectory/global.json
       - name: Verify dotnet
         shell: pwsh
-        run: __tests__/verify-dotnet.ps1 -Patterns "^2.2", "^3.1"
+        run: __tests__/verify-dotnet.ps1 -Patterns "^6.0", "^8.0"
 
   test-setup-global-json-only:
     runs-on: ${{ matrix.operating-system }}
     strategy:
       fail-fast: false
       matrix:
-        operating-system: [ubuntu-22.04, windows-latest, macos-13]
+        operating-system:
+          [ubuntu-24.04, ubuntu-22.04, windows-latest, macos-13, macos-latest]
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -220,21 +229,22 @@ jobs:
         shell: bash
         run: |
           mkdir subdirectory
-          echo '{"sdk":{"version": "2.2.207","rollForward": "latestFeature"}}' > ./subdirectory/global.json
+          echo '{"sdk":{"version": "6.0.424","rollForward": "latestFeature"}}' > ./subdirectory/global.json
       - name: Setup dotnet
         uses: ./
         with:
           global-json-file: ./subdirectory/global.json
       - name: Verify dotnet
         shell: pwsh
-        run: __tests__/verify-dotnet.ps1 -Patterns "^2.2"
+        run: __tests__/verify-dotnet.ps1 -Patterns "^6.0"
 
   test-global-json-with-comments:
     runs-on: ${{ matrix.operating-system }}
     strategy:
       fail-fast: false
       matrix:
-        operating-system: [ubuntu-22.04, windows-latest, macos-13]
+        operating-system:
+          [ubuntu-24.04, ubuntu-22.04, windows-latest, macos-13, macos-latest]
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -245,21 +255,22 @@ jobs:
         shell: bash
         run: |
           mkdir subdirectory
-          echo '/* should support comments */ {"sdk":{"version": "2.2.207","rollForward": "latestFeature"}} // should support comments' > ./subdirectory/global.json
+          echo '/* should support comments */ {"sdk":{"version": "6.0.424","rollForward": "latestFeature"}} // should support comments' > ./subdirectory/global.json
       - name: Setup dotnet
         uses: ./
         with:
           global-json-file: ./subdirectory/global.json
       - name: Verify dotnet
         shell: pwsh
-        run: __tests__/verify-dotnet.ps1 -Patterns "^2.2"
+        run: __tests__/verify-dotnet.ps1 -Patterns "^6.0"
 
   test-setup-with-dotnet-quality:
     runs-on: ${{ matrix.operating-system }}
     strategy:
       fail-fast: false
       matrix:
-        operating-system: [ubuntu-22.04, windows-latest, macos-13]
+        operating-system:
+          [ubuntu-24.04, ubuntu-22.04, windows-latest, macos-13, macos-latest]
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -281,7 +292,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        operating-system: [ubuntu-22.04, windows-latest, macos-13]
+        operating-system:
+          [ubuntu-24.04, ubuntu-22.04, windows-latest, macos-13, macos-latest]
     env:
       NUGET_PACKAGES: ${{ github.workspace }}/.nuget/packages
     steps:
@@ -293,11 +305,11 @@ jobs:
       - name: Copy NuGet lock file to root
         shell: bash
         run: cp ./__tests__/e2e-test-csproj/packages.lock.json ./packages.lock.json
-      - name: Setup .NET Core 3.1
+      - name: Setup .NET Core 8.0
         id: setup-dotnet
         uses: ./
         with:
-          dotnet-version: 3.1
+          dotnet-version: '8.0'
           cache: true
       - name: Verify Cache
         if: steps.setup-dotnet.outputs.cache-hit == 'true'
@@ -305,14 +317,15 @@ jobs:
         run: if [[ -e ${NUGET_PACKAGES} ]]; then exit 0; else exit 1; fi
       - name: Verify dotnet
         shell: pwsh
-        run: __tests__/verify-dotnet.ps1 -Patterns "^3.1"
+        run: __tests__/verify-dotnet.ps1 -Patterns "^8.0"
 
   test-setup-with-cache-dependency-path:
     runs-on: ${{ matrix.operating-system }}
     strategy:
       fail-fast: false
       matrix:
-        operating-system: [ubuntu-22.04, windows-latest, macos-13]
+        operating-system:
+          [ubuntu-24.04, ubuntu-22.04, windows-latest, macos-13, macos-latest]
     env:
       NUGET_PACKAGES: ${{ github.workspace }}/.nuget/packages
     steps:
@@ -321,11 +334,11 @@ jobs:
       - name: Clear toolcache
         shell: pwsh
         run: __tests__/clear-toolcache.ps1 ${{ runner.os }}
-      - name: Setup .NET Core 3.1
+      - name: Setup .NET Core 8.0
         id: setup-dotnet
         uses: ./
         with:
-          dotnet-version: 3.1
+          dotnet-version: '8.0'
           cache: true
           cache-dependency-path: './__tests__/e2e-test-csproj/packages.lock.json'
       - name: Verify Cache
@@ -334,14 +347,15 @@ jobs:
         run: if [[ -e ${NUGET_PACKAGES} ]]; then exit 0; else exit 1; fi
       - name: Verify dotnet
         shell: pwsh
-        run: __tests__/verify-dotnet.ps1 -Patterns "^3.1"
+        run: __tests__/verify-dotnet.ps1 -Patterns "^8.0"
 
   test-dotnet-version-output-during-single-version-installation:
     runs-on: ${{ matrix.operating-system }}
     strategy:
       fail-fast: false
       matrix:
-        operating-system: [ubuntu-22.04, windows-latest, macos-13]
+        operating-system:
+          [ubuntu-24.04, ubuntu-22.04, windows-latest, macos-13, macos-latest]
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -367,7 +381,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        operating-system: [ubuntu-22.04, windows-latest, macos-13]
+        operating-system:
+          [ubuntu-24.04, ubuntu-22.04, windows-latest, macos-13, macos-latest]
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -431,7 +446,7 @@ jobs:
           __tests__/verify-dotnet.ps1 -Patterns "^6.0" -CheckNugetConfig
 
   test-bypass-proxy:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     env:
       https_proxy: http://no-such-proxy:3128
       no_proxy: github.com,dotnetcli.blob.core.windows.net,download.visualstudio.microsoft.com,api.nuget.org,dotnetcli.azureedge.net
@@ -441,25 +456,26 @@ jobs:
       - name: Clear toolcache
         shell: pwsh
         run: __tests__/clear-toolcache.ps1 ${{ runner.os }}
-      - name: Setup dotnet 3.1.201
+      - name: Setup dotnet 8.0.402
         uses: ./
         with:
-          dotnet-version: 3.1.201
+          dotnet-version: 8.0.402
           source-url: https://api.nuget.org/v3/index.json
         env:
           NUGET_AUTH_TOKEN: NOTATOKEN
       - name: Verify dotnet
         shell: pwsh
-        run: __tests__/verify-dotnet.ps1 -Patterns "^3.1.201$" -CheckNugetConfig
+        run: __tests__/verify-dotnet.ps1 -Patterns "^8.0.402$" -CheckNugetConfig
 
   test-sequential-version-installation:
     runs-on: ${{ matrix.operating-system }}
     strategy:
       fail-fast: false
       matrix:
-        operating-system: [ubuntu-22.04, windows-latest, macos-13]
-        lower-version: ['3.1.426']
-        higher-version: ['7.0.203']
+        operating-system:
+          [ubuntu-24.04, ubuntu-22.04, windows-latest, macos-13, macos-latest]
+        lower-version: ['6.0.425']
+        higher-version: ['8.0.403']
     steps:
       - name: Checkout
         uses: actions/checkout@v4
