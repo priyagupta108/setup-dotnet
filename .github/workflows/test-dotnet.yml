@@ -17,11 +17,30 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        operating-system: [ubuntu-24.04, ubuntu-22.04]
+        operating-system:
+          [ubuntu-latest, ubuntu-22.04, windows-latest, macos-13, macos-latest]
         dotnet-version: ['2.1', '2.2', '3.0', '3.1', '5.0', '6.0', '7.0', '8.0']
-    env:
-      DOTNET_SYSTEM_GLOBALIZATION_INVARIANT: true
-      CLR_OPENSSL_VERSION_OVERRIDE: '1.1 code'
+        exclude:
+          - dotnet-version: '2.1'
+            operating-system: ubuntu-latest
+          - dotnet-version: '2.2'
+            operating-system: ubuntu-latest
+          - dotnet-version: '3.0'
+            operating-system: ubuntu-latest
+          - dotnet-version: '3.1'
+            operating-system: ubuntu-latest
+          - dotnet-version: '5.0'
+            operating-system: ubuntu-latest
+          - dotnet-version: '2.1'
+            operating-system: macos-latest
+          - dotnet-version: '2.2'
+            operating-system: macos-latest
+          - dotnet-version: '3.0'
+            operating-system: macos-latest
+          - dotnet-version: '3.1'
+            operating-system: macos-latest
+          - dotnet-version: '5.0'
+            operating-system: macos-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -32,8 +51,6 @@ jobs:
         uses: ./
         with:
           dotnet-version: ${{ matrix.dotnet-version }}
-      - name: Install dependencies
-        run: openssl version -a
       - name: Verify installed version
         shell: pwsh
         run: |
