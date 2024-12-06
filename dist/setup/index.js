@@ -93900,7 +93900,7 @@ const fixWindowsInstallDir = (installDir) => {
         return installDir.replace(/^[cC]:\\/, 'd:\\');
     }
     else {
-        return installDir;
+        return installDir.replace(/^[cC]:\\/, 'd:\\');
     }
 };
 class DotnetInstallDir {

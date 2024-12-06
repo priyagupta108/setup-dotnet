@@ -221,7 +221,7 @@ const fixWindowsInstallDir = (installDir: string): string => {
   if (!isSelfHosted() && fs.existsSync('d:\\')) {
     return installDir.replace(/^[cC]:\\/, 'd:\\');
   } else {
-    return installDir;
+    return installDir.replace(/^[cC]:\\/, 'd:\\');
   }
 };
 
