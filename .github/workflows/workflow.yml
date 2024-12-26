@@ -185,9 +185,8 @@ jobs:
       - name: Install curl
         run: |
           apt update
-          apt -y install wget curl
-          wget http://archive.ubuntu.com/ubuntu/pool/main/o/openssl/libssl1.1_1.1.1f-1ubuntu2.16_amd64.deb
-          dpkg -i libssl1.1_1.1.1f-1ubuntu2.16_amd64.deb
+          apt -y install curl
+          apt install libssl1.1
       - name: Setup dotnet 3.1.201
         uses: ./
         with:
