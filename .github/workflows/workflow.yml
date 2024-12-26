@@ -185,6 +185,7 @@ jobs:
         run: |
           apt update
           apt -y install curl
+          apt -y install libssl1.1
           
       - name: Setup dotnet 3.1.201
         uses: ./
