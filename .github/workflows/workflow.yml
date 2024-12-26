@@ -165,7 +165,7 @@ jobs:
   test-proxy:
     runs-on: ubuntu-20.04
     container:
-      image: ubuntu:20.04
+      image: ubuntu:22.04
       options: --dns 127.0.0.1
     services:
       squid-proxy:
@@ -185,8 +185,7 @@ jobs:
       - name: Install curl
         run: |
           apt update
-          apt -y install curl libssl1.1
-
+          apt -y install curl libssl-dev
       - name: Setup dotnet 3.1.201
         uses: ./
         with:
