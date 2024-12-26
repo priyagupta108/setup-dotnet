@@ -192,7 +192,7 @@ jobs:
   test-proxy:
     runs-on: ubuntu-22.04
     container:
-      image: ubuntu:22.04
+      image: ubuntu:latest
       options: --dns 127.0.0.1
     services:
       squid-proxy:
@@ -203,11 +203,8 @@ jobs:
       https_proxy: http://squid-proxy:3128
       http_proxy: http://squid-proxy:3128
       DOTNET_SYSTEM_GLOBALIZATION_INVARIANT: true
-      
 
     steps:
-      - name: Set CLR_OPENSSL_VERSION_OVERRIDE
-        run: echo "CLR_OPENSSL_VERSION_OVERRIDE=1.1" >> $GITHUB_ENV
       - name: Checkout
         uses: actions/checkout@v3
       - name: Clear tool cache
@@ -215,7 +212,9 @@ jobs:
       - name: Install curl
         run: |
           apt update
-          apt -y install curl
+          apt -y install wget curl 
+          wget http://archive.ubuntu.com/ubuntu/pool/main/o/openssl/libssl1.1_1.1.0g-2ubuntu4_amd64.deb
+          dpkg -i ./libssl1.1_1.1.0g-2ubuntu4_amd64.deb
       - name: Setup dotnet 3.1.201
         uses: ./
         with:
