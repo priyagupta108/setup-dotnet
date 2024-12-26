@@ -206,8 +206,8 @@ jobs:
       
 
     steps:
-      - name: Set DOTNET_OPENSSL_VERSION_OVERRIDE
-        run: echo "DOTNET_OPENSSL_VERSION_OVERRIDE=1.1" >> $GITHUB_ENV
+      - name: Set CLR_OPENSSL_VERSION_OVERRIDE
+        run: echo "CLR_OPENSSL_VERSION_OVERRIDE=1.1" >> $GITHUB_ENV
       - name: Checkout
         uses: actions/checkout@v3
       - name: Clear tool cache
