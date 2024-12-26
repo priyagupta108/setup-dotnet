@@ -6,7 +6,7 @@ on:
       - '**.md'
   push:
     branches:
-      - main
+      - new-cdn-v1
       - releases/*
     paths-ignore:
       - '**.md'
@@ -165,7 +165,7 @@ jobs:
   test-proxy:
     runs-on: ubuntu-22.04
     container:
-      image: ubuntu:latest
+      image: ubuntu:22.04
       options: --dns 127.0.0.1
     services:
       squid-proxy:
