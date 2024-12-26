@@ -190,9 +190,9 @@ jobs:
         run: __tests__/verify-dotnet.ps1 2.2 3.1
 
   test-proxy:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     container:
-      image: ubuntu:20.04
+      image: ubuntu:22.04
       options: --dns 127.0.0.1
     services:
       squid-proxy:
@@ -203,8 +203,11 @@ jobs:
       https_proxy: http://squid-proxy:3128
       http_proxy: http://squid-proxy:3128
       DOTNET_SYSTEM_GLOBALIZATION_INVARIANT: true
+      
 
     steps:
+      - name: Set DOTNET_OPENSSL_VERSION_OVERRIDE
+        run: echo "DOTNET_OPENSSL_VERSION_OVERRIDE=1.1" >> $GITHUB_ENV
       - name: Checkout
         uses: actions/checkout@v3
       - name: Clear tool cache
