@@ -185,9 +185,7 @@ jobs:
         run: |
           apt update
           apt -y install curl
-      - name: Clear toolcache
-        shell: pwsh
-        run: __tests__/clear-toolcache.ps1 ${{ runner.os }}
+    
           
       - name: Setup dotnet 6.0.428
         uses: ./
