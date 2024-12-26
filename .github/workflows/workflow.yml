@@ -175,7 +175,7 @@ jobs:
     env:
       https_proxy: http://squid-proxy:3128
       http_proxy: http://squid-proxy:3128
-      DOTNET_SYSTEM_GLOBALIZATION_INVARIANT: true
+      # DOTNET_SYSTEM_GLOBALIZATION_INVARIANT: true
     steps:
       - name: Checkout
         uses: actions/checkout@v2
