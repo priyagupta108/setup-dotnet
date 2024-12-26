@@ -187,17 +187,17 @@ jobs:
           apt -y install curl
        
           
-      - name: Setup dotnet  6.0
+      - name: Setup dotnet 6.0.428
         uses: ./
         with:
-          dotnet-version: "6.0"
+          dotnet-version: 6.0.428
           source-url: https://api.nuget.org/v3/index.json
         env:
           NUGET_AUTH_TOKEN: NOTATOKEN
       - name: Check OpenSSL version
         run: openssl version -a    
       - name: Verify dotnet
-        run: __tests__/verify-dotnet.sh "^6.0"
+        run: __tests__/verify-dotnet.sh 6.0.428
 
   test-bypass-proxy:
     runs-on: ubuntu-22.04
