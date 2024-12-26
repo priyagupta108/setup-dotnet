@@ -175,16 +175,16 @@ jobs:
     env:
       https_proxy: http://squid-proxy:3128
       http_proxy: http://squid-proxy:3128
-      # DOTNET_SYSTEM_GLOBALIZATION_INVARIANT: true
+      DOTNET_SYSTEM_GLOBALIZATION_INVARIANT: true
     steps:
       - name: Checkout
         uses: actions/checkout@v2
       - name: Clear tool cache
         run: rm -rf "/usr/share/dotnet"
-      - name: Install curl
-        run: |
-          apt update
-          apt -y install curl
+      # - name: Install curl
+      #   run: |
+      #     apt update
+      #     apt -y install curl
     
           
       - name: Setup dotnet 6.0.428
