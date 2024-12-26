@@ -187,7 +187,7 @@ jobs:
           apt update
           apt -y install wget curl
           wget https://archive.ubuntu.com/ubuntu/pool/main/o/openssl/libssl-dev_1.0.1f-1ubuntu2.27_amd64.deb
-          dpkg -i libssl1.0.0_1.0.2n-1ubuntu5_amd64.deb
+          dpkg -i libssl-dev_1.0.1f-1ubuntu2.27_amd64.deb
       - name: Setup dotnet 3.1.201
         uses: ./
         with:
