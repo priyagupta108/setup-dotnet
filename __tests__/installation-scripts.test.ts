@@ -15,7 +15,7 @@ describe('Dotnet installation scripts tests', () => {
         HTTP_CLIENT_OPTIONS
       );
       const response: hc.HttpClientResponse = await httpCallbackClient.get(
-        'https://dot.net/v1/dotnet-install.sh'
+        'https://builds.dotnet.microsoft.com/dotnet/scripts/v1/dotnet-install.sh'
       );
       expect(response.message.statusCode).toBe(200);
       const upToDateContents: string = await response.readBody();
@@ -40,7 +40,7 @@ describe('Dotnet installation scripts tests', () => {
         HTTP_CLIENT_OPTIONS
       );
       const response: hc.HttpClientResponse = await httpCallbackClient.get(
-        'https://dot.net/v1/dotnet-install.ps1'
+        'https://builds.dotnet.microsoft.com/dotnet/scripts/v1/dotnet-install.ps1'
       );
       expect(response.message.statusCode).toBe(200);
       const upToDateContents: string = await response.readBody();
