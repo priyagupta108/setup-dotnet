@@ -748,16 +748,16 @@ jobs:
       - name: Clear toolcache
         shell: pwsh
         run: __tests__/clear-toolcache.ps1 ${{ runner.os }}
-      - name: Setup dotnet 8.0.402
+      - name: Setup dotnet 8.0.405
         uses: ./
         with:
-          dotnet-version: 8.0.402
+          dotnet-version: 8.0.405
           source-url: https://api.nuget.org/v3/index.json
         env:
           NUGET_AUTH_TOKEN: NOTATOKEN
       - name: Verify dotnet
         shell: pwsh
-        run: __tests__/verify-dotnet.ps1 -Patterns "^8.0.402$" -CheckNugetConfig
+        run: __tests__/verify-dotnet.ps1 -Patterns "^8.0.405$" -CheckNugetConfig
 
   test-sequential-version-installation:
     runs-on: ${{ matrix.operating-system }}
