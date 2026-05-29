@@ -143,6 +143,7 @@ steps:
 ```
 
 > **Note**: The action supports `latest*` variants of the [rollForward](https://learn.microsoft.com/en-us/dotnet/core/tools/global-json#rollforward) field in `global.json`. When set to `latestPatch`, `latestFeature`, `latestMinor`, or `latestMajor`, the action installs the appropriate SDK version.
+> The `sdk.version` in `global.json` requires a full version number in `x.y.znn` format (e.g., `10.0.100`). Refer to [Microsoft's documentation](https://learn.microsoft.com/en-us/dotnet/core/tools/global-json#version) for supported values.
 
 ## Caching NuGet Packages
 The action has a built-in functionality for caching and restoring dependencies. It uses [toolkit/cache](https://github.com/actions/toolkit/tree/main/packages/cache) under the hood for caching global packages data but requires less configuration settings. The `cache` input is optional, and caching is turned off by default.
