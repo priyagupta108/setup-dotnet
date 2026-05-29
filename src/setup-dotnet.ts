@@ -208,6 +208,14 @@ function getVersionFromGlobalJson(globalJsonPath: string): string {
     version = globalJson.sdk.version;
     const rollForward = globalJson.sdk.rollForward;
     if (rollForward) {
+      const versionPattern = /^\d+\.\d+\.\d{3,}/;
+      if (!versionPattern.test(version)) {
+        throw new Error(
+          `Invalid SDK version '${version}' in global.json. ` +
+            `Requires the full version number in 'x.y.znn' format (e.g., '10.0.100'). ` +
+            `See: https://learn.microsoft.com/en-us/dotnet/core/tools/global-json#version`
+        );
+      }
       const [major, minor, featurePatch] = version.split('.');
       const feature = featurePatch.substring(0, 1);
 
