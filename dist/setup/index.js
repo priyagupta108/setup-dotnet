@@ -79148,27 +79148,33 @@ async function run() {
             core.warning(`The 'dotnet-channel' input is only supported when 'dotnet-version' is set to 'latest'.`);
             dotnetChannel = '';
         }
+        let globalJsonQuality = '';
         const globalJsonFileInput = core.getInput('global-json-file');
         if (globalJsonFileInput) {
             const globalJsonPath = path_1.default.resolve(process.cwd(), globalJsonFileInput);
             if (!fs.existsSync(globalJsonPath)) {
                 throw new Error(`The specified global.json file '${globalJsonFileInput}' does not exist`);
             }
-            versions.push(getVersionFromGlobalJson(globalJsonPath));
+            const result = getVersionFromGlobalJson(globalJsonPath);
+            versions.push(result.version);
+            globalJsonQuality = result.quality;
         }
         if (!versions.length) {
             // Try to fall back to global.json
             core.debug('No version found, trying to find version from global.json');
             const globalJsonPath = path_1.default.join(process.cwd(), 'global.json');
             if (fs.existsSync(globalJsonPath)) {
-                versions.push(getVersionFromGlobalJson(globalJsonPath));
+                const result = getVersionFromGlobalJson(globalJsonPath);
+                versions.push(result.version);
+                globalJsonQuality = result.quality;
             }
             else {
                 core.info(`The global.json wasn't found in the root directory. No .NET version will be installed.`);
             }
         }
         if (versions.length) {
-            const quality = core.getInput('dotnet-quality');
+            const quality = core.getInput('dotnet-quality') ||
+                globalJsonQuality;
             if (quality && !qualityOptions.includes(quality)) {
                 throw new Error(`Value '${quality}' is not supported for the 'dotnet-quality' option. Supported values are: daily, preview, ga.`);
             }
@@ -79232,6 +79238,7 @@ function getArchitectureInput() {
 }
 function getVersionFromGlobalJson(globalJsonPath) {
     let version = '';
+    let quality = '';
     const globalJson = json5_1.default.parse(
     // .trim() is necessary to strip BOM https://github.com/nodejs/node/issues/20649
     fs.readFileSync(globalJsonPath, { encoding: 'utf8' }).trim(), 
@@ -79245,17 +79252,27 @@ function getVersionFromGlobalJson(globalJsonPath) {
         version = globalJson.sdk.version;
         const rollForward = globalJson.sdk.rollForward;
         if (rollForward) {
-            const versionPattern = /^\d+\.\d+\.\d{3,}/;
+            const versionPattern = /^\d+\.\d+\.[1-9]\d{2}(-.+)?$/;
             if (!versionPattern.test(version)) {
-                throw new Error(`Invalid SDK version '${version}' in global.json. ` +
-                    `Requires the full version number in 'x.y.znn' format (e.g., '10.0.100'). ` +
+                throw new Error(`Version '${version}' is not valid for the 'sdk.version' value in global.json. ` +
+                    `When 'rollForward' is specified, a full SDK version is required. ` +
                     `See: https://learn.microsoft.com/en-us/dotnet/core/tools/global-json#version`);
             }
+            const isPrerelease = version.includes('-');
             const [major, minor, featurePatch] = version.split('.');
             const feature = featurePatch.substring(0, 1);
+            if (isPrerelease) {
+                const prereleaseTag = version.split('-')[1].split('.')[0].toLowerCase();
+                quality =
+                    rollForward === 'latestMajor'
+                        ? prereleaseTag === 'alpha' || prereleaseTag === 'dev'
+                            ? 'daily'
+                            : 'preview'
+                        : '';
+            }
             switch (rollForward) {
                 case 'latestMajor':
-                    version = '';
+                    version = isPrerelease ? 'latest' : '';
                     break;
                 case 'latestMinor':
                     version = `${major}`;
@@ -79269,7 +79286,7 @@ function getVersionFromGlobalJson(globalJsonPath) {
             }
         }
     }
-    return version;
+    return { version, quality };
 }
 function outputInstalledVersion(installedVersions, globalJsonFileInput) {
     if (!installedVersions.length) {
