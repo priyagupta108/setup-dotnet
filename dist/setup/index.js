@@ -79149,6 +79149,7 @@ async function run() {
             dotnetChannel = '';
         }
         let globalJsonQuality = '';
+        let globalJsonVersion = '';
         const globalJsonFileInput = core.getInput('global-json-file');
         if (globalJsonFileInput) {
             const globalJsonPath = path_1.default.resolve(process.cwd(), globalJsonFileInput);
@@ -79158,6 +79159,7 @@ async function run() {
             const result = getVersionFromGlobalJson(globalJsonPath);
             versions.push(result.version);
             globalJsonQuality = result.quality;
+            globalJsonVersion = result.version;
         }
         if (!versions.length) {
             // Try to fall back to global.json
@@ -79167,20 +79169,24 @@ async function run() {
                 const result = getVersionFromGlobalJson(globalJsonPath);
                 versions.push(result.version);
                 globalJsonQuality = result.quality;
+                globalJsonVersion = result.version;
             }
             else {
                 core.info(`The global.json wasn't found in the root directory. No .NET version will be installed.`);
             }
         }
         if (versions.length) {
-            const quality = core.getInput('dotnet-quality') ||
-                globalJsonQuality;
-            if (quality && !qualityOptions.includes(quality)) {
-                throw new Error(`Value '${quality}' is not supported for the 'dotnet-quality' option. Supported values are: daily, preview, ga.`);
+            const inputQuality = core.getInput('dotnet-quality');
+            if (inputQuality && !qualityOptions.includes(inputQuality)) {
+                throw new Error(`Value '${inputQuality}' is not supported for the 'dotnet-quality' option. Supported values are: daily, preview, ga.`);
             }
             let dotnetInstaller;
             const uniqueVersions = new Set(versions.map(v => (v.toLowerCase() === 'latest' ? 'latest' : v)));
             for (const version of uniqueVersions) {
+                // Apply globalJsonQuality only to the version that came from global.json
+                const isFromGlobalJson = version === globalJsonVersion ||
+                    (version === 'latest' && globalJsonVersion === 'latest');
+                const quality = inputQuality || (isFromGlobalJson ? globalJsonQuality : '');
                 dotnetInstaller = new installer_1.DotnetCoreInstaller(version, quality, architecture, version.toLowerCase() === 'latest' ? dotnetChannel : undefined);
                 const installedVersion = await dotnetInstaller.installDotnet();
                 installedDotnetVersions.push(installedVersion);
