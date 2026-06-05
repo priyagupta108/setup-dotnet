@@ -79246,8 +79246,6 @@ function getVersionFromGlobalJson(globalJsonPath) {
         const rollForward = globalJson.sdk.rollForward;
         if (rollForward) {
             // Skip rollForward optimization for prerelease versions.
-            // Channel-based installation only serves GA releases, so prerelease
-            // versions must be installed by their exact version.
             if (semver_1.default.prerelease(version)) {
                 return version;
             }
