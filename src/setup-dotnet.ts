@@ -208,18 +208,20 @@ function getVersionFromGlobalJson(globalJsonPath: string): string {
     version = globalJson.sdk.version;
     const rollForward = globalJson.sdk.rollForward;
     if (rollForward) {
-      const versionPattern = /^\d+\.\d+\.[1-9]\d{2,}(-.+)?$/;
+      // Skip rollForward optimization for prerelease versions.
+      // Channel-based installation only serves GA releases, so prerelease
+      // versions must be installed by their exact version.
+      if (semver.prerelease(version)) {
+        return version;
+      }
+
+      const versionPattern = /^\d+\.\d+\.[1-9]\d{2,}$/;
       if (!versionPattern.test(version)) {
         throw new Error(
           `Version '${version}' is not valid for the 'sdk.version' value in global.json. ` +
             `When 'rollForward' is specified, a full SDK version is required. ` +
             `See: https://learn.microsoft.com/en-us/dotnet/core/tools/global-json`
         );
-      }
-
-      // Skip rollForward optimization for prerelease versions with latestMajor.
-      if (rollForward === 'latestMajor' && semver.prerelease(version)) {
-        return version;
       }
 
       const [major, minor, featurePatch] = version.split('.');
