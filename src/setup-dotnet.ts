@@ -207,12 +207,7 @@ function getVersionFromGlobalJson(globalJsonPath: string): string {
   if (globalJson.sdk && globalJson.sdk.version) {
     version = globalJson.sdk.version;
     const rollForward = globalJson.sdk.rollForward;
-    if (rollForward) {
-      // Skip rollForward optimization for prerelease versions.
-      if (semver.prerelease(version)) {
-        return version;
-      }
-
+    if (rollForward && !semver.prerelease(version)) {
       const versionPattern = /^\d+\.\d+\.[1-9]\d{2,}$/;
       if (!versionPattern.test(version)) {
         throw new Error(
