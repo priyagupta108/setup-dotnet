@@ -43,6 +43,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.39.4",
+    "@jest/globals": "^30.4.1",
     "@types/jest": "^30.0.0",
     "@types/node": "^24.13.2",
     "@types/semver": "^7.7.0",
@@ -52,6 +53,8 @@
     "eslint": "^9.39.4",
     "eslint-config-prettier": "^10.1.5",
     "eslint-plugin-jest": "^29.15.2",
+    "eslint-plugin-n": "^18.1.0",
+    "globals": "^17.7.0",
     "husky": "^9.1.7",
     "jest": "^30.4.2",
     "jest-circus": "^30.4.2",

@@ -1,40 +1,34 @@
+// This is a reusable configuration file copied from https://github.com/actions/reusable-workflows/tree/main/reusable-configurations. Please don't make changes to this file as it's the subject of an automatic update.
 import js from '@eslint/js';
 import tsParser from '@typescript-eslint/parser';
 import tsPlugin from '@typescript-eslint/eslint-plugin';
-import jestPlugin from 'eslint-plugin-jest';
-import prettierConfig from 'eslint-config-prettier';
+import jest from 'eslint-plugin-jest';
+import n from 'eslint-plugin-n';
+import prettier from 'eslint-config-prettier';
+import globals from 'globals';
 
 export default [
   {
-    ignores: ['dist/**', 'lib/**', 'node_modules/**', 'coverage/**']
+    ignores: ['**/*', '!src/**', '!__tests__/**']
   },
   js.configs.recommended,
   {
     files: ['**/*.ts'],
     languageOptions: {
       parser: tsParser,
-      parserOptions: {
-        ecmaVersion: 2022,
-        sourceType: 'module',
-        project: './tsconfig.eslint.json'
-      },
+      ecmaVersion: 2022,
+      sourceType: 'module',
       globals: {
-        process: 'readonly',
-        console: 'readonly',
-        module: 'readonly',
-        require: 'readonly',
-        __dirname: 'readonly',
-        Buffer: 'readonly'
+        ...globals.node,
+        ...globals.es2015
       }
     },
     plugins: {
       '@typescript-eslint': tsPlugin,
-      jest: jestPlugin
+      n
     },
     rules: {
       ...tsPlugin.configs.recommended.rules,
-      ...jestPlugin.configs.recommended.rules,
-      'no-undef': 'off',
       '@typescript-eslint/no-require-imports': 'error',
       '@typescript-eslint/no-non-null-assertion': 'off',
       '@typescript-eslint/no-explicit-any': 'off',
@@ -54,17 +48,25 @@ export default [
         }
       ],
       'no-control-regex': 'off',
-      'no-constant-condition': ['error', {checkLoops: false}]
+      'no-constant-condition': ['error', {checkLoops: false}],
+      'n/no-extraneous-import': 'error'
     }
   },
   {
     files: ['**/*{test,spec}.ts'],
+    plugins: {jest},
+    languageOptions: {
+      globals: {
+        ...globals.jest
+      }
+    },
     rules: {
+      ...jest.configs['flat/recommended'].rules,
       '@typescript-eslint/no-unused-vars': 'off',
       'jest/no-standalone-expect': 'off',
       'jest/no-conditional-expect': 'off',
       'no-console': 'off'
     }
   },
-  prettierConfig
+  prettier
 ];
