@@ -105703,7 +105703,7 @@ async function run() {
                         await exec_exec('dotnet', ['workload', 'install', ...workloads]);
                     }
                     catch (err) {
-                        throw new Error(`Failed to install workloads [${workloads.join(', ')}]: ${err}`);
+                        throw new Error(`Failed to install workloads [${workloads.join(', ')}]: ${err}`, { cause: err });
                     }
                 }
             }
