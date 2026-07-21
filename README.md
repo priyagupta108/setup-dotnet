@@ -24,9 +24,9 @@ for .NET SDK versions that are currently available.
 - Upgraded action from node20 to node24
   > Make sure your runner is on version v2.327.1 or later to ensure compatibility with this release. see [Release Notes](https://github.com/actions/runner/releases/tag/v2.327.1)
 
-- **(v5.4.0)** The action now validates the `sdk.version` field in `global.json` when `rollForward` is specified. Invalid version formats (wildcards like `10.0.*` or runtime-style versions like `8.0.0`) will now fail. Use a valid SDK version in the `A.B.Cxx` format (e.g., `8.0.100`). See the [.NET SDK version specification](https://learn.microsoft.com/en-us/dotnet/core/tools/global-json#version) for details.
+- **([v5.4.0](https://github.com/actions/setup-dotnet/releases/tag/v5.4.0))** The action now validates the `sdk.version` field in `global.json` when `rollForward` is specified. Invalid version formats (wildcards like `10.0.*` or runtime-style versions like `8.0.0`) will now fail. Use a valid SDK version in the `A.B.Cxx` format (e.g., `8.0.100`). See the [.NET SDK version specification](https://learn.microsoft.com/en-us/dotnet/core/tools/global-json#version) for details.
 
-For more details, see the full release notes on the [release page](https://github.com/actions/setup-dotnet/releases/tag/v5.0.0)
+For more details, see the full release notes on the [release page](https://github.com/actions/setup-dotnet/releases)
 
 ## Usage
 
