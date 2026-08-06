@@ -105,7 +105,7 @@ steps:
 
 ## Using the `dotnet-quality` input
 
-The `dotnet-quality` input installs the latest build of the specified quality in the channel. Supported values: `daily`, `preview`, `ga`.
+The `dotnet-quality` input installs the latest build of the specified quality in the channel. Supported values: `daily`, `preview`, `ga`. For more details about quality options, see the [official .NET documentation](https://learn.microsoft.com/en-us/dotnet/core/tools/dotnet-install-script#options).
 
 > **Note**: When used with a specific SDK version, `dotnet-quality` supports only `A.B`, `A.B.x`, `A`, `A.x`, and `A.B.Cxx` formats where the major version is higher than 5. For all other formats, `dotnet-quality` will be ignored.
 
