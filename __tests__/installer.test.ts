@@ -609,6 +609,8 @@ describe('installer tests', () => {
 
       it(`should reject a dangling symlink instead of probing its writable parent`, async () => {
         delete process.env['DOTNET_INSTALL_DIR'];
+        // Resolved, because that is the form the probe receives on every platform.
+        const linkPath = path.resolve('/usr/share/dotnet');
         const {DotnetInstallDir, fs: freshFs} = await importInstallerFor(
           'linux',
           () => true
@@ -616,7 +618,7 @@ describe('installer tests', () => {
         // A dangling link exists for lstat, but nothing can be created under it.
         (freshFs.mkdtempSync as jest.Mock).mockImplementation(
           (...args: unknown[]) => {
-            if (String(args[0]).startsWith('/usr/share/dotnet')) {
+            if (path.dirname(String(args[0])) === linkPath) {
               throw Object.assign(new Error('no such file or directory'), {
                 code: 'ENOENT'
               });
@@ -631,8 +633,8 @@ describe('installer tests', () => {
         const probedIn = (freshFs.mkdtempSync as jest.Mock).mock.calls.map(
           call => path.dirname(String(call[0]))
         );
-        expect(probedIn).toContain('/usr/share/dotnet');
-        expect(probedIn).not.toContain('/usr/share');
+        expect(probedIn).toContain(linkPath);
+        expect(probedIn).not.toContain(path.dirname(linkPath));
       });
 
       it(`should keep the default location and warn when neither is writable`, async () => {
