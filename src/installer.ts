@@ -3,7 +3,7 @@ import * as core from '@actions/core';
 import * as exec from '@actions/exec';
 import * as io from '@actions/io';
 import * as hc from '@actions/http-client';
-import {chmodSync} from 'fs';
+import {chmodSync, lstatSync, mkdtempSync, rmSync} from 'fs';
 import path from 'path';
 import {fileURLToPath} from 'url';
 import os from 'os';
@@ -336,15 +336,95 @@ export class DotnetInstallScript {
 export abstract class DotnetInstallDir {
   private static readonly default = {
     linux: '/usr/share/dotnet',
-    mac: path.join(process.env['HOME'] + '', '.dotnet'),
+    get mac() {
+      return (
+        DotnetInstallDir.userInstallPath() ??
+        path.join(process.env['HOME'] + '', '.dotnet')
+      );
+    },
     windows: path.join(process.env['PROGRAMFILES'] + '', 'dotnet')
   };
 
-  public static readonly dirPath = process.env['DOTNET_INSTALL_DIR']
-    ? DotnetInstallDir.convertInstallPathToAbsolute(
+  private static resolvedDirPath: string | undefined;
+
+  // Lazy: probing the filesystem at import would run for jobs that install nothing.
+  public static get dirPath(): string {
+    DotnetInstallDir.resolvedDirPath ??= DotnetInstallDir.resolveDirPath();
+    return DotnetInstallDir.resolvedDirPath;
+  }
+
+  private static resolveDirPath(): string {
+    if (process.env['DOTNET_INSTALL_DIR']) {
+      return DotnetInstallDir.convertInstallPathToAbsolute(
         process.env['DOTNET_INSTALL_DIR']
-      )
-    : DotnetInstallDir.default[PLATFORM];
+      );
+    }
+
+    const systemPath = DotnetInstallDir.default[PLATFORM];
+    const userPath = DotnetInstallDir.userInstallPath();
+
+    if (
+      !userPath ||
+      userPath === systemPath ||
+      DotnetInstallDir.isWritableLocation(systemPath)
+    ) {
+      return systemPath;
+    }
+
+    if (!DotnetInstallDir.isWritableLocation(userPath)) {
+      core.warning(
+        `Neither the default .NET install directory '${systemPath}' nor '${userPath}' is writable by the current user. Keeping '${systemPath}', but the installation is likely to fail. Set the DOTNET_INSTALL_DIR environment variable to a writable location.`
+      );
+      return systemPath;
+    }
+
+    core.warning(
+      `The default .NET install directory '${systemPath}' is not writable by the current user. Falling back to '${userPath}'; .NET preinstalled in the default location will no longer be used. Set the DOTNET_INSTALL_DIR environment variable to override this location.`
+    );
+    return userPath;
+  }
+
+  private static userInstallPath(): string | undefined {
+    try {
+      const home = os.homedir();
+      // An empty HOME yields '', which would otherwise resolve against the cwd.
+      return path.isAbsolute(home) ? path.join(home, '.dotnet') : undefined;
+    } catch {
+      return undefined;
+    }
+  }
+
+  // A probe, not accessSync: accessSync ignores Windows ACLs.
+  private static isWritableLocation(installDir: string): boolean {
+    let existingPath = path.resolve(installDir);
+
+    try {
+      // lstat, not existsSync, so a dangling symlink fails the probe below.
+      while (!lstatSync(existingPath, {throwIfNoEntry: false})) {
+        const parentPath = path.dirname(existingPath);
+        if (parentPath === existingPath) return false;
+        existingPath = parentPath;
+      }
+    } catch {
+      return false;
+    }
+
+    let probeDir: string | undefined;
+    try {
+      probeDir = mkdtempSync(path.join(existingPath, '.setup-dotnet-probe-'));
+      return true;
+    } catch {
+      return false;
+    } finally {
+      if (probeDir) {
+        try {
+          rmSync(probeDir, {recursive: true, force: true});
+        } catch {
+          // Cleanup is best-effort; the probe already answered the question.
+        }
+      }
+    }
+  }
 
   private static convertInstallPathToAbsolute(installDir: string): string {
     if (path.isAbsolute(installDir)) return path.normalize(installDir);
@@ -378,10 +458,6 @@ export function normalizeArch(arch: string): string {
 }
 
 export class DotnetCoreInstaller {
-  static {
-    DotnetInstallDir.setEnvironmentVariable();
-  }
-
   constructor(
     private version: string,
     private quality: QualityOptions,
@@ -390,6 +466,8 @@ export class DotnetCoreInstaller {
   ) {}
 
   public async installDotnet(): Promise<string | null> {
+    DotnetInstallDir.setEnvironmentVariable();
+
     const versionResolver = new DotnetVersionResolver(
       this.version,
       this.quality,

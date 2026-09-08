@@ -399,7 +399,7 @@ You can also set `DOTNET_INSTALL_DIR` to a value based on runtime variables, suc
     - name: Set DOTNET_INSTALL_DIR
       run: echo "DOTNET_INSTALL_DIR=$HOME/.dotnet" >> $GITHUB_ENV
 ```
-> **Note**: On some self-hosted or large Linux runners, installing .NET under the default `/usr/share/dotnet` location may fail due to insufficient permissions. To ensure successful installation, set `DOTNET_INSTALL_DIR` to a user-writable path.
+> **Note**: On some self-hosted or larger runners, the default location (for example `/usr/share/dotnet` on Linux or `C:\Program Files\dotnet` on Windows) may not be writable by the current user. When `DOTNET_INSTALL_DIR` is not set and the default location is not writable, the action logs a warning and installs .NET into `$HOME/.dotnet` instead. Because that moves `DOTNET_ROOT` and `PATH`, .NET preinstalled under the system location is no longer picked up. Set `DOTNET_INSTALL_DIR` explicitly to pin the location.
 
 ## Recommended permissions
 
