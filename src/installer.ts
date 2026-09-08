@@ -347,7 +347,7 @@ export abstract class DotnetInstallDir {
 
   private static resolvedDirPath: string | undefined;
 
-  // Lazy: probing the filesystem at import would run for jobs that install nothing.
+  // Resolved on first use so a job that installs nothing never touches the disk.
   public static get dirPath(): string {
     DotnetInstallDir.resolvedDirPath ??= DotnetInstallDir.resolveDirPath();
     return DotnetInstallDir.resolvedDirPath;
@@ -387,19 +387,21 @@ export abstract class DotnetInstallDir {
   private static homeInstallPath(): string | undefined {
     try {
       const home = os.homedir();
-      // An empty HOME yields '', which would otherwise resolve against the cwd.
+      // An empty HOME would make this relative to the current working directory.
       return path.isAbsolute(home) ? path.join(home, '.dotnet') : undefined;
     } catch {
       return undefined;
     }
   }
 
-  // A probe, not accessSync: accessSync ignores Windows ACLs.
+  // Writability is tested by creating a directory. accessSync is not enough: it
+  // ignores Windows ACLs, so it reports success where the install would fail.
   private static isWritableLocation(installDir: string): boolean {
     let existingPath = path.resolve(installDir);
 
     try {
-      // lstat, not existsSync, so a dangling symlink fails the probe below.
+      // lstat also matches a broken symlink. existsSync does not, and the walk
+      // would skip past it to a writable parent and wrongly report success.
       while (!lstatSync(existingPath, {throwIfNoEntry: false})) {
         const parentPath = path.dirname(existingPath);
         if (parentPath === existingPath) return false;
@@ -420,7 +422,7 @@ export abstract class DotnetInstallDir {
         try {
           rmSync(probeDir, {recursive: true, force: true});
         } catch {
-          // A throw here would replace the return value above.
+          // Throwing here would discard the result already returned above.
         }
       }
     }

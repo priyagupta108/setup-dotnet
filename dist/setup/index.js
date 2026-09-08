@@ -45327,7 +45327,7 @@ class DotnetInstallDir {
         windows: external_path_default().join(process.env['PROGRAMFILES'] + '', 'dotnet')
     };
     static resolvedDirPath;
-    // Lazy: probing the filesystem at import would run for jobs that install nothing.
+    // Resolved on first use so a job that installs nothing never touches the disk.
     static get dirPath() {
         DotnetInstallDir.resolvedDirPath ??= DotnetInstallDir.resolveDirPath();
         return DotnetInstallDir.resolvedDirPath;
@@ -45353,18 +45353,20 @@ class DotnetInstallDir {
     static homeInstallPath() {
         try {
             const home = external_os_default().homedir();
-            // An empty HOME yields '', which would otherwise resolve against the cwd.
+            // An empty HOME would make this relative to the current working directory.
             return external_path_default().isAbsolute(home) ? external_path_default().join(home, '.dotnet') : undefined;
         }
         catch {
             return undefined;
         }
     }
-    // A probe, not accessSync: accessSync ignores Windows ACLs.
+    // Writability is tested by creating a directory. accessSync is not enough: it
+    // ignores Windows ACLs, so it reports success where the install would fail.
     static isWritableLocation(installDir) {
         let existingPath = external_path_default().resolve(installDir);
         try {
-            // lstat, not existsSync, so a dangling symlink fails the probe below.
+            // lstat also matches a broken symlink. existsSync does not, and the walk
+            // would skip past it to a writable parent and wrongly report success.
             while (!(0,external_fs_namespaceObject.lstatSync)(existingPath, { throwIfNoEntry: false })) {
                 const parentPath = external_path_default().dirname(existingPath);
                 if (parentPath === existingPath)
@@ -45389,7 +45391,7 @@ class DotnetInstallDir {
                     (0,external_fs_namespaceObject.rmSync)(probeDir, { recursive: true, force: true });
                 }
                 catch {
-                    // A throw here would replace the return value above.
+                    // Throwing here would discard the result already returned above.
                 }
             }
         }
