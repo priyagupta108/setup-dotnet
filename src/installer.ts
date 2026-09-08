@@ -338,7 +338,7 @@ export abstract class DotnetInstallDir {
     linux: '/usr/share/dotnet',
     get mac() {
       return (
-        DotnetInstallDir.userInstallPath() ??
+        DotnetInstallDir.homeInstallPath() ??
         path.join(process.env['HOME'] + '', '.dotnet')
       );
     },
@@ -361,30 +361,30 @@ export abstract class DotnetInstallDir {
     }
 
     const systemPath = DotnetInstallDir.default[PLATFORM];
-    const userPath = DotnetInstallDir.userInstallPath();
+    const homePath = DotnetInstallDir.homeInstallPath();
 
     if (
-      !userPath ||
-      userPath === systemPath ||
+      !homePath ||
+      homePath === systemPath ||
       DotnetInstallDir.isWritableLocation(systemPath)
     ) {
       return systemPath;
     }
 
-    if (!DotnetInstallDir.isWritableLocation(userPath)) {
+    if (!DotnetInstallDir.isWritableLocation(homePath)) {
       core.warning(
-        `Neither the default .NET install directory '${systemPath}' nor '${userPath}' is writable by the current user. Keeping '${systemPath}', but the installation is likely to fail. Set the DOTNET_INSTALL_DIR environment variable to a writable location.`
+        `Neither the default .NET install directory '${systemPath}' nor '${homePath}' is writable by the current user. Keeping '${systemPath}', but the installation is likely to fail. Set the DOTNET_INSTALL_DIR environment variable to a writable location.`
       );
       return systemPath;
     }
 
     core.warning(
-      `The default .NET install directory '${systemPath}' is not writable by the current user. Falling back to '${userPath}'; .NET preinstalled in the default location will no longer be used. Set the DOTNET_INSTALL_DIR environment variable to override this location.`
+      `The default .NET install directory '${systemPath}' is not writable by the current user. Falling back to '${homePath}'; .NET preinstalled in the default location will no longer be used. Set the DOTNET_INSTALL_DIR environment variable to override this location.`
     );
-    return userPath;
+    return homePath;
   }
 
-  private static userInstallPath(): string | undefined {
+  private static homeInstallPath(): string | undefined {
     try {
       const home = os.homedir();
       // An empty HOME yields '', which would otherwise resolve against the cwd.
@@ -420,7 +420,7 @@ export abstract class DotnetInstallDir {
         try {
           rmSync(probeDir, {recursive: true, force: true});
         } catch {
-          // Cleanup is best-effort; the probe already answered the question.
+          // A throw here would replace the return value above.
         }
       }
     }

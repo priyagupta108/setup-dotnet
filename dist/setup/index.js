@@ -45321,7 +45321,7 @@ class DotnetInstallDir {
     static default = {
         linux: '/usr/share/dotnet',
         get mac() {
-            return (DotnetInstallDir.userInstallPath() ??
+            return (DotnetInstallDir.homeInstallPath() ??
                 external_path_default().join(process.env['HOME'] + '', '.dotnet'));
         },
         windows: external_path_default().join(process.env['PROGRAMFILES'] + '', 'dotnet')
@@ -45337,20 +45337,20 @@ class DotnetInstallDir {
             return DotnetInstallDir.convertInstallPathToAbsolute(process.env['DOTNET_INSTALL_DIR']);
         }
         const systemPath = DotnetInstallDir.default[PLATFORM];
-        const userPath = DotnetInstallDir.userInstallPath();
-        if (!userPath ||
-            userPath === systemPath ||
+        const homePath = DotnetInstallDir.homeInstallPath();
+        if (!homePath ||
+            homePath === systemPath ||
             DotnetInstallDir.isWritableLocation(systemPath)) {
             return systemPath;
         }
-        if (!DotnetInstallDir.isWritableLocation(userPath)) {
-            warning(`Neither the default .NET install directory '${systemPath}' nor '${userPath}' is writable by the current user. Keeping '${systemPath}', but the installation is likely to fail. Set the DOTNET_INSTALL_DIR environment variable to a writable location.`);
+        if (!DotnetInstallDir.isWritableLocation(homePath)) {
+            warning(`Neither the default .NET install directory '${systemPath}' nor '${homePath}' is writable by the current user. Keeping '${systemPath}', but the installation is likely to fail. Set the DOTNET_INSTALL_DIR environment variable to a writable location.`);
             return systemPath;
         }
-        warning(`The default .NET install directory '${systemPath}' is not writable by the current user. Falling back to '${userPath}'; .NET preinstalled in the default location will no longer be used. Set the DOTNET_INSTALL_DIR environment variable to override this location.`);
-        return userPath;
+        warning(`The default .NET install directory '${systemPath}' is not writable by the current user. Falling back to '${homePath}'; .NET preinstalled in the default location will no longer be used. Set the DOTNET_INSTALL_DIR environment variable to override this location.`);
+        return homePath;
     }
-    static userInstallPath() {
+    static homeInstallPath() {
         try {
             const home = external_os_default().homedir();
             // An empty HOME yields '', which would otherwise resolve against the cwd.
@@ -45389,7 +45389,7 @@ class DotnetInstallDir {
                     (0,external_fs_namespaceObject.rmSync)(probeDir, { recursive: true, force: true });
                 }
                 catch {
-                    // Cleanup is best-effort; the probe already answered the question.
+                    // A throw here would replace the return value above.
                 }
             }
         }
