@@ -637,6 +637,54 @@ describe('installer tests', () => {
         expect(probedIn).not.toContain(path.dirname(linkPath));
       });
 
+      it(`should probe the nearest existing parent when the directory is missing`, async () => {
+        delete process.env['DOTNET_INSTALL_DIR'];
+        const systemPath = path.resolve('/usr/share/dotnet');
+        const parentPath = path.dirname(systemPath);
+        const {DotnetInstallDir, fs: freshFs} = await importInstallerFor(
+          'linux',
+          () => true
+        );
+        // Only the parent exists, so the walk has to climb before probing.
+        (freshFs.lstatSync as jest.Mock).mockImplementation(
+          (...args: unknown[]) =>
+            path.resolve(String(args[0])) === parentPath
+              ? ({} as Stats)
+              : undefined
+        );
+
+        expect(DotnetInstallDir.dirPath).toBe('/usr/share/dotnet');
+        const probedIn = (freshFs.mkdtempSync as jest.Mock).mock.calls.map(
+          call => path.dirname(String(call[0]))
+        );
+        expect(probedIn).toContain(parentPath);
+        expect(probedIn).not.toContain(systemPath);
+      });
+
+      it(`should give up at the filesystem root when no ancestor exists`, async () => {
+        delete process.env['DOTNET_INSTALL_DIR'];
+        const systemPath = path.resolve('/usr/share/dotnet');
+        const homePath = path.join(os.homedir(), '.dotnet');
+        const {DotnetInstallDir, fs: freshFs} = await importInstallerFor(
+          'linux',
+          () => true
+        );
+        // Nothing on the system path exists, all the way up to the root.
+        (freshFs.lstatSync as jest.Mock).mockImplementation(
+          (...args: unknown[]) =>
+            systemPath.startsWith(path.resolve(String(args[0])))
+              ? undefined
+              : ({} as Stats)
+        );
+
+        expect(DotnetInstallDir.dirPath).toBe(homePath);
+        const probedIn = (freshFs.mkdtempSync as jest.Mock).mock.calls.map(
+          call => path.dirname(String(call[0]))
+        );
+        // The walk hit the root and returned without ever probing.
+        expect(probedIn).toEqual([homePath]);
+      });
+
       it(`should keep the default location and warn when neither is writable`, async () => {
         delete process.env['DOTNET_INSTALL_DIR'];
         const {DotnetInstallDir, core: freshCore} = await importInstallerFor(
