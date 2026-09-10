@@ -3,7 +3,7 @@ import * as core from '@actions/core';
 import * as exec from '@actions/exec';
 import * as io from '@actions/io';
 import * as hc from '@actions/http-client';
-import {chmodSync} from 'fs';
+import {chmodSync, lstatSync, mkdtempSync, rmSync} from 'fs';
 import path from 'path';
 import {fileURLToPath} from 'url';
 import os from 'os';
@@ -187,12 +187,13 @@ export class DotnetVersionResolver {
     // Filter out EOL versions
     releasesInfo = releasesInfo.filter(info => info['support-phase'] !== 'eol');
 
-    // Filter out preview versions if quality is not 'preview' or 'daily'
+    // Filter out prerelease versions if quality is not 'preview' or 'daily'
     // If quality is not specified, we assume strict stability (GA only)
     const normalizedQuality = (this.quality || '').toLowerCase();
     if (!['preview', 'daily'].includes(normalizedQuality)) {
+      // 'go-live' marks a release candidate, which is supported but not GA.
       releasesInfo = releasesInfo.filter(
-        info => info['support-phase'] !== 'preview'
+        info => !['preview', 'go-live'].includes(info['support-phase'])
       );
     }
 
@@ -340,11 +341,90 @@ export abstract class DotnetInstallDir {
     windows: path.join(process.env['PROGRAMFILES'] + '', 'dotnet')
   };
 
-  public static readonly dirPath = process.env['DOTNET_INSTALL_DIR']
-    ? DotnetInstallDir.convertInstallPathToAbsolute(
+  private static resolvedDirPath: string | undefined;
+
+  // Resolved on first use so a job that installs nothing never touches the disk.
+  public static get dirPath(): string {
+    DotnetInstallDir.resolvedDirPath ??= DotnetInstallDir.resolveDirPath();
+    return DotnetInstallDir.resolvedDirPath;
+  }
+
+  private static resolveDirPath(): string {
+    if (process.env['DOTNET_INSTALL_DIR']) {
+      return DotnetInstallDir.convertInstallPathToAbsolute(
         process.env['DOTNET_INSTALL_DIR']
-      )
-    : DotnetInstallDir.default[PLATFORM];
+      );
+    }
+
+    const systemPath = DotnetInstallDir.default[PLATFORM];
+    const homePath = DotnetInstallDir.homeInstallPath();
+
+    if (
+      !homePath ||
+      homePath === systemPath ||
+      // A relative default (unset HOME/PROGRAMFILES) would probe the cwd.
+      (path.isAbsolute(systemPath) &&
+        DotnetInstallDir.isWritableLocation(systemPath))
+    ) {
+      return systemPath;
+    }
+
+    if (!DotnetInstallDir.isWritableLocation(homePath)) {
+      core.warning(
+        `Neither the default .NET install directory '${systemPath}' nor '${homePath}' is writable by the current user. Keeping '${systemPath}', but the installation is likely to fail. Set the DOTNET_INSTALL_DIR environment variable to a writable location.`
+      );
+      return systemPath;
+    }
+
+    core.warning(
+      `The default .NET install directory '${systemPath}' is not writable by the current user. Falling back to '${homePath}'; .NET preinstalled in the default location will no longer be used. Set the DOTNET_INSTALL_DIR environment variable to override this location.`
+    );
+    return homePath;
+  }
+
+  private static homeInstallPath(): string | undefined {
+    try {
+      const home = os.homedir();
+      // An empty HOME would make this relative to the current working directory.
+      return path.isAbsolute(home) ? path.join(home, '.dotnet') : undefined;
+    } catch {
+      return undefined;
+    }
+  }
+
+  // Writability is tested by creating a directory. accessSync is not enough: it
+  // ignores Windows ACLs, so it reports success where the install would fail.
+  private static isWritableLocation(installDir: string): boolean {
+    let existingPath = path.resolve(installDir);
+
+    try {
+      // lstat also matches a broken symlink. existsSync does not, and the walk
+      // would skip past it to a writable parent and wrongly report success.
+      while (!lstatSync(existingPath, {throwIfNoEntry: false})) {
+        const parentPath = path.dirname(existingPath);
+        if (parentPath === existingPath) return false;
+        existingPath = parentPath;
+      }
+    } catch {
+      return false;
+    }
+
+    let probeDir: string | undefined;
+    try {
+      probeDir = mkdtempSync(path.join(existingPath, '.setup-dotnet-probe-'));
+      return true;
+    } catch {
+      return false;
+    } finally {
+      if (probeDir) {
+        try {
+          rmSync(probeDir, {recursive: true, force: true});
+        } catch {
+          // Throwing here would discard the result already returned above.
+        }
+      }
+    }
+  }
 
   private static convertInstallPathToAbsolute(installDir: string): string {
     if (path.isAbsolute(installDir)) return path.normalize(installDir);
@@ -378,10 +458,6 @@ export function normalizeArch(arch: string): string {
 }
 
 export class DotnetCoreInstaller {
-  static {
-    DotnetInstallDir.setEnvironmentVariable();
-  }
-
   constructor(
     private version: string,
     private quality: QualityOptions,
@@ -390,6 +466,8 @@ export class DotnetCoreInstaller {
   ) {}
 
   public async installDotnet(): Promise<string | null> {
+    DotnetInstallDir.setEnvironmentVariable();
+
     const versionResolver = new DotnetVersionResolver(
       this.version,
       this.quality,
