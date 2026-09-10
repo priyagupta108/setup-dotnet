@@ -45338,7 +45338,9 @@ class DotnetInstallDir {
         const homePath = DotnetInstallDir.homeInstallPath();
         if (!homePath ||
             homePath === systemPath ||
-            DotnetInstallDir.isWritableLocation(systemPath)) {
+            // A relative default (unset HOME/PROGRAMFILES) would probe the cwd.
+            (external_path_default().isAbsolute(systemPath) &&
+                DotnetInstallDir.isWritableLocation(systemPath))) {
             return systemPath;
         }
         if (!DotnetInstallDir.isWritableLocation(homePath)) {

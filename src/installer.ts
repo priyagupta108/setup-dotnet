@@ -362,7 +362,9 @@ export abstract class DotnetInstallDir {
     if (
       !homePath ||
       homePath === systemPath ||
-      DotnetInstallDir.isWritableLocation(systemPath)
+      // A relative default (unset HOME/PROGRAMFILES) would probe the cwd.
+      (path.isAbsolute(systemPath) &&
+        DotnetInstallDir.isWritableLocation(systemPath))
     ) {
       return systemPath;
     }

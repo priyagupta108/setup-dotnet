@@ -685,6 +685,23 @@ describe('installer tests', () => {
         expect(probedIn).toEqual([homePath]);
       });
 
+      it(`should not probe a relative default location`, async () => {
+        delete process.env['DOTNET_INSTALL_DIR'];
+        // An unset HOME makes the macOS default relative, e.g. 'undefined/.dotnet'.
+        delete process.env['HOME'];
+        const homePath = path.join(os.homedir(), '.dotnet');
+        const {DotnetInstallDir, fs: freshFs} = await importInstallerFor(
+          'mac',
+          () => true
+        );
+
+        expect(DotnetInstallDir.dirPath).toBe(homePath);
+        const probedIn = (freshFs.mkdtempSync as jest.Mock).mock.calls.map(
+          call => path.dirname(String(call[0]))
+        );
+        expect(probedIn).not.toContain(process.cwd());
+      });
+
       it(`should keep the default location and warn when neither is writable`, async () => {
         delete process.env['DOTNET_INSTALL_DIR'];
         const {DotnetInstallDir, core: freshCore} = await importInstallerFor(
