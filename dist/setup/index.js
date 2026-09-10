@@ -45216,11 +45216,12 @@ class DotnetVersionResolver {
         let releasesInfo = rawReleasesInfo;
         // Filter out EOL versions
         releasesInfo = releasesInfo.filter(info => info['support-phase'] !== 'eol');
-        // Filter out preview versions if quality is not 'preview' or 'daily'
+        // Filter out prerelease versions if quality is not 'preview' or 'daily'
         // If quality is not specified, we assume strict stability (GA only)
         const normalizedQuality = (this.quality || '').toLowerCase();
         if (!['preview', 'daily'].includes(normalizedQuality)) {
-            releasesInfo = releasesInfo.filter(info => info['support-phase'] !== 'preview');
+            // 'go-live' marks a release candidate, which is supported but not GA.
+            releasesInfo = releasesInfo.filter(info => !['preview', 'go-live'].includes(info['support-phase']));
         }
         // Apply channel filter (LTS/STS)
         if (channelFilter) {
@@ -45320,10 +45321,7 @@ class DotnetInstallScript {
 class DotnetInstallDir {
     static default = {
         linux: '/usr/share/dotnet',
-        get mac() {
-            return (DotnetInstallDir.homeInstallPath() ??
-                external_path_default().join(process.env['HOME'] + '', '.dotnet'));
-        },
+        mac: external_path_default().join(process.env['HOME'] + '', '.dotnet'),
         windows: external_path_default().join(process.env['PROGRAMFILES'] + '', 'dotnet')
     };
     static resolvedDirPath;
